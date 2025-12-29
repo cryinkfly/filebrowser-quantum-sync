@@ -7,20 +7,20 @@ Extracts users and hashed passwords from [FileBrowser Quantum](https://github.co
 ```
 podman run -d --name filebrowser-quantum-sync \
   -v FILEBROWSER_DB:/db:ro \
-  -v FILEBROWSER_CONFIG:/config \
+  -v FILEBROWSER_SYNC:/config \
   ghcr.io/cryinkfly/filebrowser-quantum-sync:latest
 ```
 or
 ```
 docker run -d --name filebrowser-quantum-sync \
   -v FILEBROWSER_DB:/db:ro \
-  -v FILEBROWSER_CONFIG:/config \
+  -v FILEBROWSER_SYNC:/config \
   ghcr.io/cryinkfly/filebrowser-quantum-sync:latest
 ```
 
 ### Notes
 
-- `FILEBROWSER_DB` → Path to the FileBrowser Quantum BoltDB (read-only).
+- `FILEBROWSER_DB` → Path to the FileBrowser Quantum BoltDB, which must be the same volume used by FileBrowser Quantum. It is mounted read-only to prevent accidental writes.
 - `FILEBROWSER_SYNC` → Path where the users file will be written. This volume can later be mounted into another container (e.g., `Radicale`) to provide the `htpasswd` file for `authentication`.
 - The `FILEBROWSER_DB` volume must be mounted with `:ro` to prevent accidental writes.
 - The sync container `permanently overwrites the users file` on each run to keep it in `sync with the database`.
