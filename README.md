@@ -2,10 +2,17 @@
 
 Extracts users and hashed passwords from FileBrowser Quantum and generates a `users` file compatible with htpasswd for multi-container setups.
 
-## Usage
+## Usage (Rootles Mode)
 
 ```
 podman run --rm \
+  -v FILEBROWSER_DB:/db:ro \
+  -v FILEBROWSER_SYNC:/sync \
+  docker.io/filebrowser-quantum-sync:latest
+```
+or
+```
+docker run --rm \
   -v FILEBROWSER_DB:/db:ro \
   -v FILEBROWSER_SYNC:/sync \
   docker.io/filebrowser-quantum-sync:latest
@@ -20,17 +27,32 @@ podman run --rm \
 
 ---
 
-#### Example: Radicale container integration
+#### Example: Radicale container integration (Rootles Mode)
 
 ```
-mkdir -p RADICALE_CONFIG
+podman volume create RADICALE_CONFIG
+
+wget -O $HOME/.local/share/containers/storage/volumes/RADICALE_CONFIG \
+https://raw.githubusercontent.com/cryinkfly/filebrowser-quantum-sync/refs/heads/main/radicale/config
 ```
+or
 ```
-wget -O RADICALE_CONFIG/config \
+docker volume create RADICALE_CONFIG
+
+wget -O $HOME/.local/share/docker/volumes/RADICALE_CONFIG \
 https://raw.githubusercontent.com/cryinkfly/filebrowser-quantum-sync/refs/heads/main/radicale/config
 ```
 ```
 podman run -d --name radicale \
+  -p 5232:5232 \
+  -v RADICALE_CONFIG:/etc/radicale:ro \
+  -v RADICALE_DATA:/var/lib/radicale \
+  -v FILEBROWSER_SYNC:/etc/radicale/sync:ro \
+  ghcr.io/kozea/radicale:latest
+```
+or
+```
+docker run -d --name radicale \
   -p 5232:5232 \
   -v RADICALE_CONFIG:/etc/radicale:ro \
   -v RADICALE_DATA:/var/lib/radicale \
