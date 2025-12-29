@@ -8,14 +8,14 @@ Extracts users and hashed passwords from FileBrowser Quantum and generates a `us
 podman run -d --name filebrowser-quantum-sync \
   -v FILEBROWSER_DB:/db:ro \
   -v FILEBROWSER_CONFIG:/config \
-  ghcr.io/filebrowser-quantum-sync:latest
+  ghcr.io/cryinkfly/filebrowser-quantum-sync:latest
 ```
 or
 ```
 podman run -d --name filebrowser-quantum-sync \
   -v FILEBROWSER_DB:/db:ro \
   -v FILEBROWSER_CONFIG:/config \
-  ghcr.io/filebrowser-quantum-sync:latest
+  ghcr.io/cryinkfly/filebrowser-quantum-sync:latest
 ```
 
 ### Notes
