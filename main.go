@@ -8,98 +8,85 @@
 package main
 
 import (
-    "bufio"
-    "encoding/json"
-    "fmt"
-    "log"
-    "os"
-    "strings"
-    "time"
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+	"time"
 
-    bolt "go.etcd.io/bbolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 type User struct {
-    Username string `json:"username"`
-    Password string `json:"password"` // bcrypt hash
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
-// Interval zwischen den Syncs
-const syncInterval = 1 * time.Minute
+// exportUsers liest alle Benutzer aus der BoltDB und schreibt die htpasswd-Datei
+func exportUsers(db *bolt.DB, outPath string) error {
+	out, err := os.Create(outPath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	w := bufio.NewWriter(out)
+	defer w.Flush()
+
+	seen := map[string]bool{}
+	count := 0
+
+	err = db.View(func(tx *bolt.Tx) error {
+		return tx.ForEach(func(_ []byte, b *bolt.Bucket) error {
+			return b.ForEach(func(_, v []byte) error {
+				var u User
+				if json.Unmarshal(v, &u) != nil {
+					return nil
+				}
+				if u.Username == "" || u.Password == "" {
+					return nil
+				}
+				if !strings.HasPrefix(u.Password, "$2") {
+					return nil
+				}
+				if seen[u.Username] {
+					return nil
+				}
+
+				fmt.Fprintf(w, "%s:%s\n", u.Username, u.Password)
+				seen[u.Username] = true
+				count++
+				return nil
+			})
+		})
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("users file written (%d users)\n", count)
+	return nil
+}
 
 func main() {
-    for {
-        err := runSync()
-        if err != nil {
-            log.Printf("Sync error: %v", err)
-        }
-        log.Printf("Next sync in %v...", syncInterval)
-        time.Sleep(syncInterval)
-    }
-}
+	dbPath := "/db/database.db"
+	outPath := "/config/users"
 
-func runSync() error {
-    dbPath := "/db/database.db"
-    htpasswdPath := "/sync/users"
+	// BoltDB read-only öffnen → funktioniert auch mit Podman/Docker :ro Volumes
+	db, err := bolt.Open(dbPath, 0600, &bolt.Options{ReadOnly: true})
+	if err != nil {
+		log.Fatalf("DB open failed: %v", err)
+	}
+	defer db.Close()
 
-    db, err := bolt.Open(dbPath, 0600, nil)
-    if err != nil {
-        return fmt.Errorf("opening DB: %w", err)
-    }
-    defer db.Close()
+	syncInterval := 10 * time.Second
 
-    f, err := os.Create(htpasswdPath)
-    if err != nil {
-        return fmt.Errorf("creating htpasswd file: %w", err)
-    }
-    defer f.Close()
-
-    writer := bufio.NewWriter(f)
-    defer writer.Flush()
-
-    userCount := 0
-    exportedUsers := make(map[string]bool)
-
-    err = db.View(func(tx *bolt.Tx) error {
-        return tx.ForEach(func(_ []byte, b *bolt.Bucket) error {
-            return b.ForEach(func(_, v []byte) error {
-                var user User
-                if err := json.Unmarshal(v, &user); err != nil {
-                    return nil
-                }
-
-                username := strings.TrimSpace(user.Username)
-                hash := strings.TrimSpace(user.Password)
-
-                if username == "" || hash == "" {
-                    return nil
-                }
-                if !strings.HasPrefix(hash, "$2") || len(hash) < 50 {
-                    fmt.Printf("WARN: Invalid hash for user %s: %q\n", username, hash)
-                    return nil
-                }
-
-                if exportedUsers[username] {
-                    fmt.Printf("WARN: User %s already exported, skipping\n", username)
-                    return nil
-                }
-
-                line := fmt.Sprintf("%s:%s\n", username, hash)
-                if _, err := writer.WriteString(line); err != nil {
-                    return err
-                }
-
-                exportedUsers[username] = true
-                userCount++
-                return nil
-            })
-        })
-    })
-    if err != nil {
-        return fmt.Errorf("reading DB: %w", err)
-    }
-
-    writer.Flush()
-    fmt.Printf("htpasswd successfully created (%d users)\n", userCount)
-    return nil
+	for {
+		if err := exportUsers(db, outPath); err != nil {
+			log.Printf("Sync error: %v", err)
+		}
+		time.Sleep(syncInterval)
+	}
 }
