@@ -1,9 +1,5 @@
 # filebrowser-quantum-sync
 
-> Author: Steve Zabka <br/>
-> Author-URL: https://cryinkfly.com <br/>
-> License: Apache 2.0
-
 Extracts users and hashed passwords from FileBrowser Quantum and generates a `users` file compatible with htpasswd for multi-container setups.
 
 ## Usage
