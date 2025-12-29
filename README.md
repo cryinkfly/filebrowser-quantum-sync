@@ -1,6 +1,6 @@
 # filebrowser-quantum-sync
 
-Extracts users and hashed passwords from FileBrowser Quantum and generates a `users` file compatible with htpasswd for multi-container setups.
+Extracts users and hashed passwords from [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser) and generates a `users` file compatible with htpasswd for multi-container setups.
 
 ## Usage (Rootles Mode)
 
@@ -27,7 +27,7 @@ docker run -d --name filebrowser-quantum-sync \
 
 ---
 
-#### Example: Radicale container integration (Rootles Mode)
+#### Example: [Radicale](https://radicale.org/v3.html) container integration (Rootles Mode)
 
 ```
 podman volume create RADICALE_CONFIG
