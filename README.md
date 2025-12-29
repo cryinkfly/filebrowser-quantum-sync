@@ -5,17 +5,17 @@ Extracts users and hashed passwords from FileBrowser Quantum and generates a `us
 ## Usage (Rootles Mode)
 
 ```
-podman run --rm \
+podman run -d --name filebrowser-quantum-sync \
   -v FILEBROWSER_DB:/db:ro \
-  -v FILEBROWSER_SYNC:/sync \
-  docker.io/filebrowser-quantum-sync:latest
+  -v FILEBROWSER_CONFIG:/config \
+  ghcr.io/filebrowser-quantum-sync:latest
 ```
 or
 ```
-docker run --rm \
+podman run -d --name filebrowser-quantum-sync \
   -v FILEBROWSER_DB:/db:ro \
-  -v FILEBROWSER_SYNC:/sync \
-  docker.io/filebrowser-quantum-sync:latest
+  -v FILEBROWSER_CONFIG:/config \
+  ghcr.io/filebrowser-quantum-sync:latest
 ```
 
 ### Notes
