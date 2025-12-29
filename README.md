@@ -30,11 +30,44 @@ docker run -d --name filebrowser-quantum-sync \
 #### Example: [Radicale](https://radicale.org/v3.html) container integration (Rootles Mode)
 
 ```
+podman run -d --name filebrowser-quantum \
+  -v FILEBROWSER_FILES:/srv \
+  -v FILEBROWSER_DB:/home/filebrowser/sync \
+  -p 80:80 \
+  docker.io/gtstef/filebrowser:beta
+```
+or
+```
+  docker run -d --name filebrowser-quantum \
+  -v FILEBROWSER_FILES:/srv \
+  -v FILEBROWSER_DB:/home/filebrowser/sync \
+  -p 80:80 \
+  docker.io/gtstef/filebrowser:beta
+```
+
+Change the database file path (config.yaml):
+
+```
+server:
+  database: "sync/database.db"
+```
+Create filebrowser-quantum-sync volumes
+
+```
 podman volume create RADICALE_CONFIG
 
 wget -O $HOME/.local/share/containers/storage/volumes/RADICALE_CONFIG \
 https://raw.githubusercontent.com/cryinkfly/filebrowser-quantum-sync/refs/heads/main/radicale/config
 ```
+or
+```
+docker volume create RADICALE_CONFIG
+
+wget -O $HOME/.local/share/docker/volumes/RADICALE_CONFIG \
+https://raw.githubusercontent.com/cryinkfly/filebrowser-quantum-sync/refs/heads/main/radicale/config
+```
+
+Start the filebrowser-quantum-sync container
 ```
 podman run -d --name radicale \
   -p 5232:5232 \
@@ -44,12 +77,6 @@ podman run -d --name radicale \
   ghcr.io/kozea/radicale:latest
 ```
 or
-```
-docker volume create RADICALE_CONFIG
-
-wget -O $HOME/.local/share/docker/volumes/RADICALE_CONFIG \
-https://raw.githubusercontent.com/cryinkfly/filebrowser-quantum-sync/refs/heads/main/radicale/config
-```
 ```
 docker run -d --name radicale \
   -p 5232:5232 \
