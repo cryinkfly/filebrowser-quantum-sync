@@ -12,7 +12,7 @@ podman run -d --name filebrowser-quantum-sync \
 ```
 or
 ```
-podman run -d --name filebrowser-quantum-sync \
+docker run -d --name filebrowser-quantum-sync \
   -v FILEBROWSER_DB:/db:ro \
   -v FILEBROWSER_CONFIG:/config \
   ghcr.io/cryinkfly/filebrowser-quantum-sync:latest
@@ -35,13 +35,6 @@ podman volume create RADICALE_CONFIG
 wget -O $HOME/.local/share/containers/storage/volumes/RADICALE_CONFIG \
 https://raw.githubusercontent.com/cryinkfly/filebrowser-quantum-sync/refs/heads/main/radicale/config
 ```
-or
-```
-docker volume create RADICALE_CONFIG
-
-wget -O $HOME/.local/share/docker/volumes/RADICALE_CONFIG \
-https://raw.githubusercontent.com/cryinkfly/filebrowser-quantum-sync/refs/heads/main/radicale/config
-```
 ```
 podman run -d --name radicale \
   -p 5232:5232 \
@@ -52,6 +45,12 @@ podman run -d --name radicale \
 ```
 or
 ```
+docker volume create RADICALE_CONFIG
+
+wget -O $HOME/.local/share/docker/volumes/RADICALE_CONFIG \
+https://raw.githubusercontent.com/cryinkfly/filebrowser-quantum-sync/refs/heads/main/radicale/config
+```
+```
 docker run -d --name radicale \
   -p 5232:5232 \
   -v RADICALE_CONFIG:/etc/radicale:ro \
@@ -59,3 +58,13 @@ docker run -d --name radicale \
   -v FILEBROWSER_SYNC:/etc/radicale/sync:ro \
   ghcr.io/kozea/radicale:latest
 ```
+
+The sync container currently runs permanently in the background and updates the users file every 10 seconds.
+
+This interval is temporary and is planned to be increased to 30 seconds in a future revision.
+
+When a user’s password is changed in FileBrowser Quantum, the updated bcrypt hash is automatically written to the users file during the next sync cycle.
+
+At the moment, when a user is removed in FileBrowser Quantum, the corresponding user is not automatically removed from dependent services such as Radicale. This is intentional to prevent accidental user or data removal.
+
+A separate command or dedicated mode for synchronizing user deletions is planned for a future release, giving administrators explicit control over when removed users are propagated to other services.
