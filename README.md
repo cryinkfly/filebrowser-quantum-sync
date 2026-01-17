@@ -95,3 +95,9 @@ When a user’s password is changed in FileBrowser Quantum, the updated bcrypt h
 At the moment, when a user is removed in FileBrowser Quantum, the corresponding user is not automatically removed from dependent services such as Radicale. This is intentional to prevent accidental user or data removal.
 
 A separate command or dedicated mode for synchronizing user deletions is planned for a future release, giving administrators explicit control over when removed users are propagated to other services.
+
+---
+
+# Please look here for Radicale Support: 
+
+- https://github.com/cryinkfly/podman-rootless-quadlets/tree/main/quadlets/filebrowser-quantum/radicale
